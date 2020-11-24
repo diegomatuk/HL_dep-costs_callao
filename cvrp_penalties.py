@@ -4,6 +4,8 @@ from __future__ import print_function
 from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 import pandas as pd
+import numpy as np
+
 
 
 
@@ -22,13 +24,18 @@ def create_data_model(num_vehicles):
 def print_solution(data, manager, routing, assignment):
     """Prints assignment on console."""
     # Display dropped nodes.
-    dropped_nodes = 'Dropped nodes (demand points):'
+    dropped_nodes = ''
+    dropped_nodes_list = []
+    print('Dropped nodes')
     for node in range(routing.Size()):
         if routing.IsStart(node) or routing.IsEnd(node):
             continue
         if assignment.Value(routing.NextVar(node)) == node:
             dropped_nodes += ' {}'.format(manager.IndexToNode(node))
-    print(dropped_nodes)
+            dropped_nodes_list.append(manager.IndexToNode(node))
+    print(dropped_nodes_list)
+    np.savetxt('experimentation/dropped_nodes/dropped_nodes_1.csv',dropped_nodes_list)
+
     # Display routes
     total_cost = 0
     total_load = 0
