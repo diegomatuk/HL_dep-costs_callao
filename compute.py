@@ -27,4 +27,7 @@ class Compute():
 
         return matrix
 
-np.exp(1.5031 + 0.1172*matrix) + np.exp(1.5031)
+
+
+
+# np.exp(1.5031 + 0.1172*matrix) + np.exp(1.5031)
