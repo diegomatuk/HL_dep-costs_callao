@@ -7,13 +7,10 @@ import pandas as pd
 import numpy as np
 
 
-
-
-
-def create_data_model(num_vehicles):
+def create_data_model(num_vehicles,number):
     """Stores the data for the problem."""
     data = {}
-    data['cost_matrix'] = pd.read_csv('experimentation/dep_costs/dep_cost_day1.csv',header = None).values.tolist()
+    data['cost_matrix'] = pd.read_csv(f'experimentation/dep_costs/dep_cost_day{number}.csv',header = None).values.tolist()
     data['demands'] = pd.read_csv('data.csv',engine = 'python')['Demanda'].values.tolist()
     data['vehicle_capacities'] = [860 for i in range(0,num_vehicles)]
     data['num_vehicles'] = num_vehicles
@@ -21,7 +18,7 @@ def create_data_model(num_vehicles):
     return data
 
 
-def print_solution(data, manager, routing, assignment):
+def print_solution(data, manager, routing, assignment,number):
     """Prints assignment on console."""
     # Display dropped nodes.
     dropped_nodes = ''
@@ -34,7 +31,7 @@ def print_solution(data, manager, routing, assignment):
             dropped_nodes += ' {}'.format(manager.IndexToNode(node))
             dropped_nodes_list.append(manager.IndexToNode(node))
     print(dropped_nodes_list)
-    np.savetxt('experimentation/dropped_nodes/dropped_nodes_1.csv',dropped_nodes_list)
+    np.savetxt(f'experimentation/dropped_nodes/dropped_nodes_{number}.csv',dropped_nodes_list)
 
     # Display routes
     total_cost = 0
@@ -60,6 +57,10 @@ def print_solution(data, manager, routing, assignment):
         total_cost += route_cost
         total_load += route_load
     print('Total Deprivation Cost of all routes: {}$'.format(total_cost))
+
+    with open(f'experimentation/total_cost/total_cost_{number}','w') as file_cost:
+        file_cost.write(total_cost)
+
     print('Total Load of all routes: {}'.format(total_load))
 
 
@@ -88,7 +89,6 @@ def main(num_vehicles):
 
     # Define cost of each arc.
     routing.SetArcCostEvaluatorOfAllVehicles(transit_callback_index)
-
 
     # Add Capacity constraint.
     def demand_callback(from_index):
