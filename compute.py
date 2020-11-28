@@ -8,9 +8,13 @@ class Compute():
         lista = (pd.read_csv(f'experimentation/dropped_nodes/dropped_nodes_{numero}.csv',header = None)).iloc[:,0].values.tolist()
         return np.array(lista,dtype = np.int32)
 
-    def calculate_time(matrix):
+    def calculate_time(matrix,numero):
+        ''' Calculate the time matrix for the time n'''
+
+        lista = self.dropped_nodes((numero-1))
         time_1 = pd.read_csv('experimentation/time_matrix/time_matrix_day1.csv',header = None)
 
+        #4 beacuse they are deprived with 8 hours per different distribution
         matrix.iloc[:,lista] = (matrix.iloc[:,lista] + 4)
         matrix.iloc[lista,:] = (matrix.iloc[lista,:] + 4)
         matrix.loc[~matrix.index.isin(lista),:] = time_1.loc[~matrix.index.isin(lista),:]
@@ -19,31 +23,19 @@ class Compute():
         matrix = np.array(matrix)
         np.fill_diagonal(matrix,0)
 
-        matrix.iloc[lista,:]
+        #That is the time_matrix for the time n (not necesarilly n)
+        np.savetxt(f'experimentation/time_matrix/time_matrix_day{numero}.csv')
+
 
     def recompute(self,numero):
-        lista = self.dropped_nodes((numero-1))
-
         matrix = pd.read_csv(f'experimentation/time_matrix/time_matrix_day{numero-1}.csv',header = None)
+        self.calculate_time(matrix,numero)
 
-        lista
-        matrix
-        """FIRST, WE HAVE TO SAVE THE NEW TIME MATRIX,
-        DONT COMPUTE YET THE DEPRIVATION dep_costs"""
+        time_matrix = pd.read_csv(f'experimentation/time_matrix/time_matrix_day{numero}.csv')
+        deprivation_cost = np.exp(1.5031 + 0.1172*time_matrix) + np.exp(1.5031)
+        print(deprivation_cost)
 
-
-
-        # matrix.iloc[:,lista] = np.exp(1.50031 + 0.1172*(matrix.iloc[:,lista] + 8)) + np.exp(1.5031)
-        # matrix.iloc[lista,:] = np.exp(1.50031 + 0.1172*(matrix.iloc[lista,:] + 8)) + np.exp(1.5031)
-        # matrix.loc[~matrix.index.isin(lista),:] = dep_cost_1.loc[~matrix.index.isin(lista),:]
-        # matrix.loc[:,~matrix.index.isin(lista)] = dep_cost_1.loc[:,~matrix.index.isin(lista)]
-
-        matrix = np.array(matrix)
-        np.fill_diagonal(matrix,0)
+        deprivation_cost = np.array(deprivation_cost)
+        np.fill_diagonal(deprivation_cost,0)
 
         return matrix
-
-
-
-
-# np.exp(1.5031 + 0.1172*matrix) + np.exp(1.5031)

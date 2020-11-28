@@ -6,6 +6,8 @@ from ortools.constraint_solver import pywrapcp
 import pandas as pd
 import numpy as np
 
+from compute import Compute
+
 
 def create_data_model(num_vehicles,number):
     """Stores the data for the problem."""
@@ -64,10 +66,10 @@ def print_solution(data, manager, routing, assignment,number):
     print('Total Load of all routes: {}'.format(total_load))
 
 
-def main(num_vehicles):
+def main(num_vehicles,number):
     """Solve the CVRP problem."""
     # Instantiate the data problem.
-    data = create_data_model(num_vehicles)
+    data = create_data_model(num_vehicles,number)
 
     # Create the routing index manager.
     manager = pywrapcp.RoutingIndexManager(len(data['cost_matrix']),
@@ -123,8 +125,9 @@ def main(num_vehicles):
 
     # Print solution on console.
     if assignment:
-        print_solution(data, manager, routing, assignment)
+        print_solution(data, manager, routing, assignment,number)
 
 
 if __name__ == '__main__':
-    main(40)
+    for dia in range(1111):
+        main(,dia)
