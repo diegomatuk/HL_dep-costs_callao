@@ -5,22 +5,26 @@ from ortools.constraint_solver import routing_enums_pb2
 from ortools.constraint_solver import pywrapcp
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 
 from compute import Compute
 
 
-def create_data_model(num_vehicles,number):
+def create_data_model(num_vehicles,number,mode = None):
     """Stores the data for the problem."""
     data = {}
     data['cost_matrix'] = pd.read_csv(f'experimentation/dep_costs/dep_cost_day{number}.csv',header = None).values.tolist()
     data['demands'] = pd.read_csv('data.csv',engine = 'python')['Demanda'].values.tolist()
-    data['vehicle_capacities'] = [860 for i in range(0,num_vehicles)]
-    data['num_vehicles'] = num_vehicles
+    data['vehicle_capacities'] = [2880 for i in range(0,num_vehicles)]
+    if mode == 'ruta':
+        data['num_vehicles'] = num_vehicles
+    elif mode == 'total':
+        data['num_vehicles'] = 135
     data['depot'] = 0
     return data
 
 
-def print_solution(data, manager, routing, assignment,number):
+def print_solution(data, manager, routing, assignment,number,mode):
     """Prints assignment on console."""
     # Display dropped nodes.
     dropped_nodes = ''
@@ -32,8 +36,6 @@ def print_solution(data, manager, routing, assignment,number):
         if assignment.Value(routing.NextVar(node)) == node:
             dropped_nodes += ' {}'.format(manager.IndexToNode(node))
             dropped_nodes_list.append(manager.IndexToNode(node))
-    print(dropped_nodes_list)
-    np.savetxt(f'experimentation/dropped_nodes/dropped_nodes_{number}.csv',dropped_nodes_list)
 
     # Display routes
     total_cost = 0
@@ -60,8 +62,13 @@ def print_solution(data, manager, routing, assignment,number):
         total_load += route_load
     print('Total Deprivation Cost of all routes: {}$'.format(total_cost))
 
-    with open(f'experimentation/total_cost/total_cost_{number}','w') as file_cost:
-        file_cost.write(total_cost)
+    if mode == 'ruta':
+        np.savetxt(f'experimentation/dropped_nodes/dropped_nodes_{number}.csv',dropped_nodes_list)
+        with open(f'experimentation/route_cost/route_cost_day{number}','w') as file_cost:
+            file_cost.write(str(total_cost))
+    elif mode == 'total':
+        with open(f'experimentation/total_cost/total_cost_day{number}','w') as file_cost:
+            file_cost.write(str(total_cost))
 
     print('Total Load of all routes: {}'.format(total_load))
 
@@ -108,7 +115,7 @@ def main(num_vehicles,number):
         True,  # start cumul to zero
         'Capacity')
     # Allow to drop nodes.
-    penalty = 10000
+    penalty = 1000000
     for node in range(1, len(data['cost_matrix'])):
         routing.AddDisjunction([manager.NodeToIndex(node)], penalty)
 
@@ -129,5 +136,6 @@ def main(num_vehicles,number):
 
 
 if __name__ == '__main__':
-    for dia in range(1111):
-        main(,dia)
+    for i in tqdm(range (1,7)):
+        main(40,i)
+        Compute().recompute((i+1))
